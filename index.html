@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Módulo de Asistencia Institucional</title>
+
+  <!-- Tipografía Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================================================
+       DISEÑO GLASSMORPHISM MODO OSCURO
+       ========================================================= */
+    :root {
+      --bg-main: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.85);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      --danger-gradient: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-main);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.2) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.2) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      min-height: 100vh;
+      padding-bottom: 2rem;
+    }
+
+    header {
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 1.5rem 2rem;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    main { max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; display: grid; gap: 2rem; }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    .card h2 { font-size: 1.25rem; margin-bottom: 1.25rem; font-weight: 700; color: #fff; }
+
+    .form-fila { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; }
+
+    input {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 0.8rem 1rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .form-fila input { flex: 1; min-width: 160px; }
+    input:focus { border-color: #a855f7; box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.25); }
+
+    button {
+      background: var(--primary-gradient);
+      color: #fff;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    button:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .btn-camara {
+      width: 100%;
+      padding: 1rem;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+
+    #reader {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto 1rem auto;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 2px dashed rgba(168, 85, 247, 0.5);
+    }
+
+    table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 1rem; }
+
+    th {
+      background: rgba(15, 23, 42, 0.6);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    td { padding: 1rem; border-bottom: 1px solid var(--card-border); font-size: 0.95rem; }
+
+    .qr-mini { background: #fff; padding: 4px; border-radius: 8px; display: inline-block; }
+    .qr-mini canvas, .qr-mini img { width: 50px; height: 50px; display: block; }
+
+    .mensaje { margin-top: 1.25rem; padding: 1rem; border-radius: 10px; font-weight: 600; display: none; }
+    .mensaje.ok { display: block; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.5); color: #34d399; }
+    .mensaje.error { display: block; background: rgba(244, 63, 94, 0.2); border: 1px solid rgba(244, 63, 94, 0.5); color: #fb7185; }
+    .mensaje.aviso { display: block; background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Módulo de Asistencia Institucional</h1>
+  </header>
+
+  <main>
+    <!-- LECTOR / CÁMARA MÓVIL Y PC -->
+    <section class="card">
+      <h2>📷 Registro por Cámara o Lector</h2>
+      <button type="button" id="btnIniciarCamara" class="btn-camara" onclick="iniciarCamara()">Activar Cámara del Dispositivo</button>
+      <button type="button" id="btnDetenerCamara" class="btn-camara" onclick="detenerCamara()" style="background: var(--danger-gradient); display: none;">Detener Cámara</button>
+
+      <div id="reader"></div>
+
+      <input type="text" id="inputLector" style="width: 100%;" placeholder="O ingrese/escanee código manualmente aquí..." autofocus autocomplete="off">
+      <div id="mensaje" class="mensaje"></div>
+    </section>
+
+    <!-- GESTIÓN DE ESTUDIANTES -->
+    <section class="card">
+      <h2>👥 Registro de Estudiantes</h2>
+      <div class="form-fila">
+        <input id="codigo" placeholder="Código (ej. EST-0001)">
+        <input id="nombre" placeholder="Nombre completo">
+        <input id="grado" placeholder="Grado/Curso">
+        <button type="button" onclick="agregarEstudiante()">Agregar Estudiante</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Grado</th>
+            <th>Carnet QR</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tablaEstudiantes"></tbody>
+      </table>
+    </section>
+
+    <!-- HISTORIAL DE ASISTENCIA -->
+    <section class="card">
+      <h2>📋 Historial de Asistencia</h2>
+      <div class="form-fila" style="margin-bottom: 0;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+          Fecha: <input type="date" id="filtroFecha">
+        </label>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+          </tr>
+        </thead>
+        <tbody id="tablaAsistencia"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <!-- LIBRERÍAS EXTERNAS PARA GENERACIÓN Y LECTURA DE QR -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <!-- LÓGICA DE JAVASCRIPT -->
+  <script>
+    // LocalStorage Helper
+    const leer = (clave) => {
+      try { return JSON.parse(localStorage.getItem(clave)) || []; }
+      catch(e) { return []; }
+    };
+    const guardar = (clave, datos) => localStorage.setItem(clave, JSON.stringify(datos));
+
+    function fechaHoy() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }
+
+    function horaAhora() {
+      return new Date().toLocaleTimeString("es-CO", { hour12: false });
+    }
+
+    const inputLector = document.getElementById("inputLector");
+    const mensaje = document.getElementById("mensaje");
+    const filtroFecha = document.getElementById("filtroFecha");
+    filtroFecha.value = fechaHoy();
+
+    let html5QrCode = null;
+
+    function mostrarMensaje(texto, tipo) {
+      mensaje.textContent = texto;
+      mensaje.className = `mensaje ${tipo}`;
+      setTimeout(() => (mensaje.className = "mensaje"), 3500);
+    }
+
+    // AGREGAR ESTUDIANTE
+    function agregarEstudiante() {
+      const codigoInput = document.getElementById("codigo");
+      const nombreInput = document.getElementById("nombre");
+      const gradoInput = document.getElementById("grado");
+
+      const codigo = codigoInput.value.trim().toUpperCase();
+      const nombre = nombreInput.value.trim();
+      const grado = gradoInput.value.trim();
+
+      if (!codigo || !nombre) {
+        alert("El código y el nombre son obligatorios.");
+        return;
+      }
+
+      const estudiantes = leer("estudiantes");
+      if (estudiantes.some(e => e.codigo === codigo)) {
+        alert("El código ingresado ya existe.");
+        return;
+      }
+
+      estudiantes.push({ codigo, nombre, grado });
+      guardar("estudiantes", estudiantes);
+
+      codigoInput.value = "";
+      nombreInput.value = "";
+      gradoInput.value = "";
+
+      pintarEstudiantes();
+    }
+
+    function eliminarEstudiante(codigo) {
+      const estudiantes = leer("estudiantes").filter(e => e.codigo !== codigo);
+      guardar("estudiantes", estudiantes);
+      pintarEstudiantes();
+    }
+
+    function pintarEstudiantes() {
+      const tbody = document.getElementById("tablaEstudiantes");
+      tbody.innerHTML = "";
+
+      leer("estudiantes").forEach(est => {
+        const fila = document.createElement("tr");
+        fila.innerHTML = `
+          <td>${est.codigo}</td>
+          <td>${est.nombre}</td>
+          <td>${est.grado}</td>
+          <td><div class="qr-mini" id="qr-${est.codigo}"></div></td>
+          <td><button type="button" style="background:var(--danger-gradient);" onclick="eliminarEstudiante('${est.codigo}')">Eliminar</button></td>`;
+        tbody.appendChild(fila);
+
+        // Generar Código QR
+        if (typeof QRCode !== "undefined") {
+          try {
+            new QRCode(document.getElementById(`qr-${est.codigo}`), {
+              text: est.codigo,
+              width: 50,
+              height: 50
+            });
+          } catch(err) { console.error("Error generando QR", err); }
+        }
+      });
+    }
+
+    // REGISTRAR ASISTENCIA
+    function registrarAsistencia(codigo) {
+      const estudiantes = leer("estudiantes");
+      const est = estudiantes.find(e => e.codigo === codigo);
+
+      if (!est) {
+        return mostrarMensaje(`Código no registrado: ${codigo}`, "error");
+      }
+
+      const asistencias = leer("asistencias");
+      const fecha = fechaHoy();
+
+      if (asistencias.some(a => a.codigo === codigo && a.fecha === fecha)) {
+        return mostrarMensaje(`⚠️ ${est.nombre} ya registró asistencia hoy.`, "aviso");
+      }
+
+      const hora = horaAhora();
+      asistencias.push({ codigo: est.codigo, nombre: est.nombre, fecha, hora });
+      guardar("asistencias", asistencias);
+
+      mostrarMensaje(`✔ Asistencia confirmada: ${est.nombre} (${hora})`, "ok");
+      pintarAsistencia();
+    }
+
+    function pintarAsistencia() {
+      const tbody = document.getElementById("tablaAsistencia");
+      tbody.innerHTML = "";
+
+      leer("asistencias")
+        .filter(a => a.fecha === filtroFecha.value)
+        .forEach(a => {
+          tbody.innerHTML += `<tr><td>${a.codigo}</td><td>${a.nombre}</td><td>${a.fecha}</td><td>${a.hora}</td></tr>`;
+        });
+    }
+
+    // CÁMARA QR
+    function iniciarCamara() {
+      if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("reader");
+      }
+
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        (textoScaneado) => {
+          registrarAsistencia(textoScaneado.trim().toUpperCase());
+          html5QrCode.pause(true);
+          setTimeout(() => { try { html5QrCode.resume(); } catch(e){} }, 3000);
+        }
+      ).then(() => {
+        document.getElementById("btnIniciarCamara").style.display = "none";
+        document.getElementById("btnDetenerCamara").style.display = "block";
+      }).catch(err => {
+        alert("No se pudo acceder a la cámara. Revisa los permisos.");
+      });
+    }
+
+    function detenerCamara() {
+      if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+          document.getElementById("btnIniciarCamara").style.display = "block";
+          document.getElementById("btnDetenerCamara").style.display = "none";
+        });
+      }
+    }
+
+    // EVENTOS Y CARGA INICIAL
+    filtroFecha.addEventListener("change", pintarAsistencia);
+
+    inputLector.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const codigo = inputLector.value.trim().toUpperCase();
+        inputLector.value = "";
+        if (codigo) registrarAsistencia(codigo);
+      }
+    });
+
+    pintarEstudiantes();
+    pintarAsistencia();
+  </script>
+</body>
+</html>
