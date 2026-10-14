@@ -160,6 +160,17 @@
   <main>
     <div id="mensaje" class="mensaje"></div>
 
+    <!-- TARJETA DE ACCESO RÁPIDO AL ESCÁNER -->
+    <section class="card" style="text-align: center;">
+      <h2 style="justify-content: center;">📱 Módulo Escáner Móvil</h2>
+      <p style="color: var(--text-muted); margin-bottom: 1rem;">
+        Haz clic abajo o abre esta dirección en tu teléfono celular para escanear carnets:
+      </p>
+      <a href="escaner.html" target="_blank" style="text-decoration: none;">
+        <button type="button">📷 Abrir Cámara / Lector QR</button>
+      </a>
+    </section>
+
     <!-- REGISTRO DE ESTUDIANTES -->
     <section class="card">
       <h2>
@@ -212,7 +223,7 @@
     </section>
   </main>
 
-  <!-- Librería de QR (Sin Firebase) -->
+  <!-- Librería de QR -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <script>
@@ -224,7 +235,6 @@
       return `${aaaa}-${mm}-${dd}`;
     }
 
-    // Inicializar datos locales si no existen
     function inicializarDatosLocal() {
       if (!localStorage.getItem("estudiantes")) {
         const estudiantesIniciales = {
