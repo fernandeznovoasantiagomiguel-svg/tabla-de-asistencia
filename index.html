@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Módulo de Asistencia Institucional</title>
+  <title>Panel de Asistencia - PC</title>
 
   <!-- Tipografía Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,11 +12,11 @@
 
   <style>
     /* =========================================================
-       DISEÑO GLASSMORPHISM MODO OSCURO
+       DISEÑO INTEGRADO GLASSMORPHISM MODO OSCURO
        ========================================================= */
     :root {
       --bg-main: #0f172a;
-      --card-bg: rgba(30, 41, 59, 0.85);
+      --card-bg: rgba(30, 41, 59, 0.75);
       --card-border: rgba(255, 255, 255, 0.12);
       --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
       --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -41,35 +41,69 @@
     }
 
     header {
-      background: rgba(15, 23, 42, 0.9);
+      background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--card-border);
       padding: 1.5rem 2rem;
       text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
     header h1 {
       font-size: 1.75rem;
       font-weight: 800;
       background: var(--primary-gradient);
+      background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
     }
 
-    main { max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; display: grid; gap: 2rem; }
+    main {
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      display: grid;
+      gap: 2rem;
+    }
 
     .card {
       background: var(--card-bg);
       backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--card-border);
       border-radius: var(--radius);
       padding: 1.75rem;
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
     }
 
-    .card h2 { font-size: 1.25rem; margin-bottom: 1.25rem; font-weight: 700; color: #fff; }
+    .card h2 {
+      font-size: 1.25rem;
+      margin-bottom: 1.25rem;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 700;
+    }
 
-    .form-fila { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .badge-contador {
+      background: var(--primary-gradient);
+      color: #fff;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .form-fila {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
 
     input {
       background: rgba(15, 23, 42, 0.8);
@@ -98,22 +132,6 @@
 
     button:hover { opacity: 0.9; transform: translateY(-1px); }
 
-    .btn-camara {
-      width: 100%;
-      padding: 1rem;
-      font-size: 1.1rem;
-      margin-bottom: 1rem;
-    }
-
-    #reader {
-      width: 100%;
-      max-width: 400px;
-      margin: 0 auto 1rem auto;
-      border-radius: 16px;
-      overflow: hidden;
-      border: 2px dashed rgba(168, 85, 247, 0.5);
-    }
-
     table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 1rem; }
 
     th {
@@ -135,31 +153,34 @@
     .mensaje { margin-top: 1.25rem; padding: 1rem; border-radius: 10px; font-weight: 600; display: none; }
     .mensaje.ok { display: block; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.5); color: #34d399; }
     .mensaje.error { display: block; background: rgba(244, 63, 94, 0.2); border: 1px solid rgba(244, 63, 94, 0.5); color: #fb7185; }
-    .mensaje.aviso { display: block; background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5); color: #fbbf24; }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>Módulo de Asistencia Institucional</h1>
+    <h1>Módulo de Asistencia (Panel Control)</h1>
   </header>
 
   <main>
-    <!-- LECTOR / CÁMARA MÓVIL Y PC -->
-    <section class="card">
-      <h2>📷 Registro por Cámara o Lector</h2>
-      <button type="button" id="btnIniciarCamara" class="btn-camara" onclick="iniciarCamara()">Activar Cámara del Dispositivo</button>
-      <button type="button" id="btnDetenerCamara" class="btn-camara" onclick="detenerCamara()" style="background: var(--danger-gradient); display: none;">Detener Cámara</button>
+    <div id="mensaje" class="mensaje"></div>
 
-      <div id="reader"></div>
-
-      <input type="text" id="inputLector" style="width: 100%;" placeholder="O ingrese/escanee código manualmente aquí..." autofocus autocomplete="off">
-      <div id="mensaje" class="mensaje"></div>
+    <!-- ACCESO ESCÁNER MÓVIL -->
+    <section class="card" style="text-align: center;">
+      <h2>📱 Escáner Móvil</h2>
+      <p style="color: var(--text-muted); margin-bottom: 1rem;">
+        Abre esta dirección en el navegador de tu celular para escanear los carnets:
+      </p>
+      <a href="escaner.html" target="_blank" style="text-decoration: none;">
+        <button type="button">🚀 Abrir Lector QR (escaner.html)</button>
+      </a>
     </section>
 
-    <!-- GESTIÓN DE ESTUDIANTES -->
+    <!-- REGISTRO DE ESTUDIANTES -->
     <section class="card">
-      <h2>👥 Registro de Estudiantes</h2>
+      <h2>
+        <span>👥 Registro de Estudiantes</span>
+        <span class="badge-contador" id="totalEstudiantes">Total: 0</span>
+      </h2>
       <div class="form-fila">
         <input id="codigo" placeholder="Código (ej. EST-0001)">
         <input id="nombre" placeholder="Nombre completo">
@@ -182,11 +203,15 @@
 
     <!-- HISTORIAL DE ASISTENCIA -->
     <section class="card">
-      <h2>📋 Historial de Asistencia</h2>
+      <h2>
+        <span>📋 Historial de Asistencia</span>
+        <span class="badge-contador" id="totalAsistencias">Asistencias: 0</span>
+      </h2>
       <div class="form-fila" style="margin-bottom: 0;">
         <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
-          Fecha: <input type="date" id="filtroFecha">
+          Filtrar por Fecha: <input type="date" id="filtroFecha" onchange="cargarAsistencias()">
         </label>
+        <button type="button" onclick="mostrarTodasAsistencias()" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Mostrar Todo</button>
       </div>
       <table>
         <thead>
@@ -202,42 +227,52 @@
     </section>
   </main>
 
-  <!-- LIBRERÍAS EXTERNAS PARA GENERACIÓN Y LECTURA DE QR -->
+  <!-- Librería QRCode.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="https://unpkg.com/html5-qrcode"></script>
 
-  <!-- LÓGICA DE JAVASCRIPT -->
   <script>
     // LocalStorage Helper
     const leer = (clave) => {
-      try { return JSON.parse(localStorage.getItem(clave)) || []; }
-      catch(e) { return []; }
+      try {
+        const datos = localStorage.getItem(clave);
+        return datos ? JSON.parse(datos) : [];
+      } catch (e) {
+        return [];
+      }
     };
-    const guardar = (clave, datos) => localStorage.setItem(clave, JSON.stringify(datos));
+
+    const guardar = (clave, datos) => {
+      localStorage.setItem(clave, JSON.stringify(datos));
+    };
 
     function fechaHoy() {
       const d = new Date();
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      const aaaa = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return `${aaaa}-${mm}-${dd}`;
     }
 
-    function horaAhora() {
-      return new Date().toLocaleTimeString("es-CO", { hour12: false });
+    function iniciarPanelPC() {
+      const filtroFecha = document.getElementById("filtroFecha");
+      if (filtroFecha) {
+        filtroFecha.value = fechaHoy();
+      }
+
+      cargarEstudiantes();
+      cargarAsistencias();
+
+      // Sincronización en tiempo real desde el celular u otra pestaña
+      window.addEventListener("storage", (e) => {
+        if (e.key === "asistencias") {
+          cargarAsistencias();
+          mostrarNotificacion("¡Nueva asistencia registrada desde el celular!", "ok");
+        } else if (e.key === "estudiantes") {
+          cargarEstudiantes();
+        }
+      });
     }
 
-    const inputLector = document.getElementById("inputLector");
-    const mensaje = document.getElementById("mensaje");
-    const filtroFecha = document.getElementById("filtroFecha");
-    filtroFecha.value = fechaHoy();
-
-    let html5QrCode = null;
-
-    function mostrarMensaje(texto, tipo) {
-      mensaje.textContent = texto;
-      mensaje.className = `mensaje ${tipo}`;
-      setTimeout(() => (mensaje.className = "mensaje"), 3500);
-    }
-
-    // AGREGAR ESTUDIANTE
     function agregarEstudiante() {
       const codigoInput = document.getElementById("codigo");
       const nombreInput = document.getElementById("nombre");
@@ -265,20 +300,30 @@
       nombreInput.value = "";
       gradoInput.value = "";
 
-      pintarEstudiantes();
+      cargarEstudiantes();
     }
 
     function eliminarEstudiante(codigo) {
       const estudiantes = leer("estudiantes").filter(e => e.codigo !== codigo);
       guardar("estudiantes", estudiantes);
-      pintarEstudiantes();
+      cargarEstudiantes();
     }
 
-    function pintarEstudiantes() {
+    function cargarEstudiantes() {
       const tbody = document.getElementById("tablaEstudiantes");
+      const contador = document.getElementById("totalEstudiantes");
+      if (!tbody) return;
       tbody.innerHTML = "";
 
-      leer("estudiantes").forEach(est => {
+      const estudiantes = leer("estudiantes");
+      if (contador) contador.textContent = `Total: ${estudiantes.length}`;
+
+      if (estudiantes.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">No hay estudiantes registrados.</td></tr>`;
+        return;
+      }
+
+      estudiantes.forEach(est => {
         const fila = document.createElement("tr");
         fila.innerHTML = `
           <td>${est.codigo}</td>
@@ -288,7 +333,6 @@
           <td><button type="button" style="background:var(--danger-gradient);" onclick="eliminarEstudiante('${est.codigo}')">Eliminar</button></td>`;
         tbody.appendChild(fila);
 
-        // Generar Código QR
         if (typeof QRCode !== "undefined") {
           try {
             new QRCode(document.getElementById(`qr-${est.codigo}`), {
@@ -296,90 +340,65 @@
               width: 50,
               height: 50
             });
-          } catch(err) { console.error("Error generando QR", err); }
+          } catch (err) {
+            console.error("Error al generar QR:", err);
+          }
         }
       });
     }
 
-    // REGISTRAR ASISTENCIA
-    function registrarAsistencia(codigo) {
-      const estudiantes = leer("estudiantes");
-      const est = estudiantes.find(e => e.codigo === codigo);
-
-      if (!est) {
-        return mostrarMensaje(`Código no registrado: ${codigo}`, "error");
-      }
-
-      const asistencias = leer("asistencias");
-      const fecha = fechaHoy();
-
-      if (asistencias.some(a => a.codigo === codigo && a.fecha === fecha)) {
-        return mostrarMensaje(`⚠️ ${est.nombre} ya registró asistencia hoy.`, "aviso");
-      }
-
-      const hora = horaAhora();
-      asistencias.push({ codigo: est.codigo, nombre: est.nombre, fecha, hora });
-      guardar("asistencias", asistencias);
-
-      mostrarMensaje(`✔ Asistencia confirmada: ${est.nombre} (${hora})`, "ok");
-      pintarAsistencia();
-    }
-
-    function pintarAsistencia() {
+    function cargarAsistencias() {
       const tbody = document.getElementById("tablaAsistencia");
+      const filtroFecha = document.getElementById("filtroFecha");
+      const contador = document.getElementById("totalAsistencias");
+      if (!tbody) return;
       tbody.innerHTML = "";
 
-      leer("asistencias")
-        .filter(a => a.fecha === filtroFecha.value)
-        .forEach(a => {
-          tbody.innerHTML += `<tr><td>${a.codigo}</td><td>${a.nombre}</td><td>${a.fecha}</td><td>${a.hora}</td></tr>`;
-        });
-    }
+      const asistencias = leer("asistencias");
+      const fechaFiltro = filtroFecha ? filtroFecha.value : "";
 
-    // CÁMARA QR
-    function iniciarCamara() {
-      if (!html5QrCode) {
-        html5QrCode = new Html5Qrcode("reader");
+      const filtradas = fechaFiltro 
+        ? asistencias.filter(a => a.fecha === fechaFiltro)
+        : asistencias;
+
+      if (contador) {
+        contador.textContent = fechaFiltro 
+          ? `Hoy: ${filtradas.length}` 
+          : `Total: ${filtradas.length}`;
       }
 
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 220, height: 220 } },
-        (textoScaneado) => {
-          registrarAsistencia(textoScaneado.trim().toUpperCase());
-          html5QrCode.pause(true);
-          setTimeout(() => { try { html5QrCode.resume(); } catch(e){} }, 3000);
-        }
-      ).then(() => {
-        document.getElementById("btnIniciarCamara").style.display = "none";
-        document.getElementById("btnDetenerCamara").style.display = "block";
-      }).catch(err => {
-        alert("No se pudo acceder a la cámara. Revisa los permisos.");
+      if (filtradas.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">No hay registros para la fecha seleccionada.</td></tr>`;
+        return;
+      }
+
+      filtradas.forEach(a => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${a.codigo}</td>
+            <td>${a.nombre}</td>
+            <td>${a.fecha}</td>
+            <td>${a.hora}</td>
+          </tr>`;
       });
     }
 
-    function detenerCamara() {
-      if (html5QrCode) {
-        html5QrCode.stop().then(() => {
-          document.getElementById("btnIniciarCamara").style.display = "block";
-          document.getElementById("btnDetenerCamara").style.display = "none";
-        });
-      }
+    function mostrarTodasAsistencias() {
+      const filtroFecha = document.getElementById("filtroFecha");
+      if (filtroFecha) filtroFecha.value = "";
+      cargarAsistencias();
     }
 
-    // EVENTOS Y CARGA INICIAL
-    filtroFecha.addEventListener("change", pintarAsistencia);
+    function mostrarNotificacion(texto, tipo) {
+      const msg = document.getElementById("mensaje");
+      if (!msg) return;
+      msg.textContent = texto;
+      msg.className = `mensaje ${tipo}`;
+      setTimeout(() => (msg.className = "mensaje"), 3500);
+    }
 
-    inputLector.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        const codigo = inputLector.value.trim().toUpperCase();
-        inputLector.value = "";
-        if (codigo) registrarAsistencia(codigo);
-      }
-    });
-
-    pintarEstudiantes();
-    pintarAsistencia();
+    // Inicialización
+    iniciarPanelPC();
   </script>
 </body>
 </html>
