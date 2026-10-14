@@ -5,15 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Panel de Asistencia - PC</title>
 
-  <!-- Tipografía Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 
   <style>
-    /* =========================================================
-       DISEÑO INTEGRADO GLASSMORPHISM MODO OSCURO
-       ========================================================= */
     :root {
       --bg-main: #0f172a;
       --card-bg: rgba(30, 41, 59, 0.75);
@@ -164,17 +160,6 @@
   <main>
     <div id="mensaje" class="mensaje"></div>
 
-    <!-- ACCESO ESCÁNER MÓVIL -->
-    <section class="card" style="text-align: center;">
-      <h2>📱 Escáner Móvil</h2>
-      <p style="color: var(--text-muted); margin-bottom: 1rem;">
-        Abre esta dirección en el navegador de tu celular para escanear los carnets:
-      </p>
-      <a href="escaner.html" target="_blank" style="text-decoration: none;">
-        <button type="button">🚀 Abrir Lector QR (escaner.html)</button>
-      </a>
-    </section>
-
     <!-- REGISTRO DE ESTUDIANTES -->
     <section class="card">
       <h2>
@@ -204,7 +189,7 @@
     <!-- HISTORIAL DE ASISTENCIA -->
     <section class="card">
       <h2>
-        <span>📋 Historial de Asistencia</span>
+        <span>📋 Historial de Asistencia Local</span>
         <span class="badge-contador" id="totalAsistencias">Asistencias: 0</span>
       </h2>
       <div class="form-fila" style="margin-bottom: 0;">
@@ -227,24 +212,10 @@
     </section>
   </main>
 
-  <!-- Librería QRCode.js -->
+  <!-- Librería de QR (Sin Firebase) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <script>
-    // LocalStorage Helper
-    const leer = (clave) => {
-      try {
-        const datos = localStorage.getItem(clave);
-        return datos ? JSON.parse(datos) : [];
-      } catch (e) {
-        return [];
-      }
-    };
-
-    const guardar = (clave, datos) => {
-      localStorage.setItem(clave, JSON.stringify(datos));
-    };
-
     function fechaHoy() {
       const d = new Date();
       const aaaa = d.getFullYear();
@@ -253,24 +224,29 @@
       return `${aaaa}-${mm}-${dd}`;
     }
 
-    function iniciarPanelPC() {
-      const filtroFecha = document.getElementById("filtroFecha");
-      if (filtroFecha) {
-        filtroFecha.value = fechaHoy();
+    // Inicializar datos locales si no existen
+    function inicializarDatosLocal() {
+      if (!localStorage.getItem("estudiantes")) {
+        const estudiantesIniciales = {
+          "EST-1001": { codigo: "EST-1001", nombre: "Sofía Valentina Gómez", grado: "10° A" },
+          "EST-1002": { codigo: "EST-1002", nombre: "Mateo Alejandro Pérez", grado: "10° A" },
+          "EST-1003": { codigo: "EST-1003", nombre: "Isabella Sofía Rodríguez", grado: "11° B" },
+          "EST-1004": { codigo: "EST-1004", nombre: "Lucas Daniel Martínez", grado: "9° C" },
+          "EST-1005": { codigo: "EST-1005", nombre: "Valentina Lucía Herrera", grado: "11° A" }
+        };
+        localStorage.setItem("estudiantes", JSON.stringify(estudiantesIniciales));
       }
 
+      if (!localStorage.getItem("asistencias")) {
+        localStorage.setItem("asistencias", JSON.stringify([]));
+      }
+    }
+
+    function iniciarPanelPC() {
+      inicializarDatosLocal();
+      document.getElementById("filtroFecha").value = fechaHoy();
       cargarEstudiantes();
       cargarAsistencias();
-
-      // Sincronización en tiempo real desde el celular u otra pestaña
-      window.addEventListener("storage", (e) => {
-        if (e.key === "asistencias") {
-          cargarAsistencias();
-          mostrarNotificacion("¡Nueva asistencia registrada desde el celular!", "ok");
-        } else if (e.key === "estudiantes") {
-          cargarEstudiantes();
-        }
-      });
     }
 
     function agregarEstudiante() {
@@ -287,26 +263,24 @@
         return;
       }
 
-      const estudiantes = leer("estudiantes");
-      if (estudiantes.some(e => e.codigo === codigo)) {
-        alert("El código ingresado ya existe.");
-        return;
-      }
-
-      estudiantes.push({ codigo, nombre, grado });
-      guardar("estudiantes", estudiantes);
+      let estudiantes = JSON.parse(localStorage.getItem("estudiantes")) || {};
+      estudiantes[codigo] = { codigo, nombre, grado };
+      localStorage.setItem("estudiantes", JSON.stringify(estudiantes));
 
       codigoInput.value = "";
       nombreInput.value = "";
       gradoInput.value = "";
 
       cargarEstudiantes();
+      mostrarNotificacion("Estudiante agregado exitosamente", "ok");
     }
 
     function eliminarEstudiante(codigo) {
-      const estudiantes = leer("estudiantes").filter(e => e.codigo !== codigo);
-      guardar("estudiantes", estudiantes);
+      let estudiantes = JSON.parse(localStorage.getItem("estudiantes")) || {};
+      delete estudiantes[codigo];
+      localStorage.setItem("estudiantes", JSON.stringify(estudiantes));
       cargarEstudiantes();
+      mostrarNotificacion("Estudiante eliminado", "error");
     }
 
     function cargarEstudiantes() {
@@ -315,7 +289,9 @@
       if (!tbody) return;
       tbody.innerHTML = "";
 
-      const estudiantes = leer("estudiantes");
+      const datos = JSON.parse(localStorage.getItem("estudiantes")) || {};
+      const estudiantes = Object.values(datos);
+
       if (contador) contador.textContent = `Total: ${estudiantes.length}`;
 
       if (estudiantes.length === 0) {
@@ -340,9 +316,7 @@
               width: 50,
               height: 50
             });
-          } catch (err) {
-            console.error("Error al generar QR:", err);
-          }
+          } catch (e) {}
         }
       });
     }
@@ -354,7 +328,7 @@
       if (!tbody) return;
       tbody.innerHTML = "";
 
-      const asistencias = leer("asistencias");
+      const asistencias = JSON.parse(localStorage.getItem("asistencias")) || [];
       const fechaFiltro = filtroFecha ? filtroFecha.value : "";
 
       const filtradas = fechaFiltro 
@@ -384,8 +358,7 @@
     }
 
     function mostrarTodasAsistencias() {
-      const filtroFecha = document.getElementById("filtroFecha");
-      if (filtroFecha) filtroFecha.value = "";
+      document.getElementById("filtroFecha").value = "";
       cargarAsistencias();
     }
 
@@ -397,7 +370,6 @@
       setTimeout(() => (msg.className = "mensaje"), 3500);
     }
 
-    // Inicialización
     iniciarPanelPC();
   </script>
 </body>
