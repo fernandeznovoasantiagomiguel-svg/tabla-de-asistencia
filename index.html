@@ -261,4 +261,235 @@
       const d = new Date();
       const aaaa = d.getFullYear();
       const mm = String(d.getMonth() + 1).padStart(2, "0");
-      const dd = String(d.getDate()).
+      const dd = String(d.getDate()).padStart(2, "0");
+      return `${aaaa}-${mm}-${dd}`;
+    }
+
+    function horaAhora() {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    // Funciones globales de administración
+    window.agregarEstudiante = function() {
+      const codigoInput = document.getElementById("codigo");
+      const nombreInput = document.getElementById("nombre");
+      const gradoInput = document.getElementById("grado");
+
+      const codigo = codigoInput.value.trim().toUpperCase();
+      const nombre = nombreInput.value.trim();
+      const grado = gradoInput.value.trim();
+
+      if (!codigo || !nombre) {
+        alert("El código y el nombre son obligatorios.");
+        return;
+      }
+
+      set(ref(db, "estudiantes/" + codigo), { codigo, nombre, grado })
+        .then(() => {
+          codigoInput.value = "";
+          nombreInput.value = "";
+          gradoInput.value = "";
+          mostrarNotificacion("Estudiante agregado exitosamente", "ok");
+        })
+        .catch(() => {
+          alert("Error al guardar en Firebase.");
+        });
+    };
+
+    window.eliminarEstudiante = function(codigo) {
+      remove(ref(db, "estudiantes/" + codigo));
+      mostrarNotificacion("Estudiante eliminado", "error");
+    };
+
+    window.eliminarAsistencia = function(idRegistro) {
+      if (confirm("¿Estás seguro de que deseas eliminar este registro de asistencia?")) {
+        remove(ref(db, "asistencias/" + idRegistro))
+          .then(() => {
+            mostrarNotificacion("Asistencia eliminada del historial", "error");
+          })
+          .catch(() => {
+            alert("Error al intentar eliminar el registro.");
+          });
+      }
+    };
+
+    window.mostrarTodasAsistencias = function() {
+      document.getElementById("filtroFecha").value = "";
+      cargarAsistencias();
+    };
+
+    function precargarEstudiantesIniciales() {
+      const estudiantesRef = ref(db, "estudiantes");
+      get(estudiantesRef).then((snapshot) => {
+        if (!snapshot.exists()) {
+          const estudiantesIniciales = {
+            "1042587287": { codigo: "1042587287", nombre: "Girleza Berdugo", grado: "General" },
+            "1042587117": { codigo: "1042587117", nombre: "Yoelis Perez", grado: "General" },
+            "1043982748": { codigo: "1043982748", nombre: "Gibran Ortiz", grado: "General" },
+            "1043983630": { codigo: "1043983630", nombre: "Natalia Ramirez", grado: "General" },
+            "1142928847": { codigo: "1142928847", nombre: "Santiago Fernandez", grado: "General" },
+            "1047424083": { codigo: "1047424083", nombre: "Thaliana Aguirre", grado: "General" }
+          };
+          set(estudiantesRef, estudiantesIniciales);
+        }
+      });
+    }
+
+    function cargarEstudiantes() {
+      const tbody = document.getElementById("tablaEstudiantes");
+      const contador = document.getElementById("totalEstudiantes");
+      if (!tbody) return;
+
+      get(ref(db, "estudiantes")).then((snapshot) => {
+        tbody.innerHTML = "";
+        const datos = snapshot.val() || {};
+        const estudiantes = Object.values(datos);
+
+        if (contador) contador.textContent = `Total: ${estudiantes.length}`;
+
+        if (estudiantes.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">No hay estudiantes registrados.</td></tr>`;
+          return;
+        }
+
+        estudiantes.forEach(est => {
+          const fila = document.createElement("tr");
+          fila.innerHTML = `
+            <td>${est.codigo}</td>
+            <td>${est.nombre}</td>
+            <td>${est.grado}</td>
+            <td><div class="qr-mini" id="qr-${est.codigo}"></div></td>
+            <td><button type="button" style="background:var(--danger-gradient);" onclick="eliminarEstudiante('${est.codigo}')">Eliminar</button></td>`;
+          tbody.appendChild(fila);
+
+          if (typeof QRCode !== "undefined") {
+            try {
+              new QRCode(document.getElementById(`qr-${est.codigo}`), {
+                text: est.codigo,
+                width: 50,
+                height: 50
+              });
+            } catch (e) {}
+          }
+        });
+      });
+    }
+
+    window.cargarAsistencias = function() {
+      const tbody = document.getElementById("tablaAsistencia");
+      const filtroFecha = document.getElementById("filtroFecha");
+      const contador = document.getElementById("totalAsistencias");
+      if (!tbody) return;
+
+      get(ref(db, "asistencias")).then((snapshot) => {
+        tbody.innerHTML = "";
+        const datos = snapshot.val() || {};
+        const asistencias = Object.values(datos);
+        const fechaFiltro = filtroFecha ? filtroFecha.value : "";
+
+        const filtradas = fechaFiltro 
+          ? asistencias.filter(a => a.fecha === fechaFiltro)
+          : asistencias;
+
+        if (contador) {
+          contador.textContent = fechaFiltro 
+            ? `Hoy: ${filtradas.length}` 
+            : `Total: ${filtradas.length}`;
+        }
+
+        if (filtradas.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">No hay registros para la fecha seleccionada.</td></tr>`;
+          return;
+        }
+
+        filtradas.forEach(a => {
+          const idRegistro = `${a.codigo}_${a.fecha}`;
+          tbody.innerHTML += `
+            <tr>
+              <td>${a.codigo}</td>
+              <td>${a.nombre}</td>
+              <td>${a.fecha}</td>
+              <td>${a.hora}</td>
+              <td><button type="button" style="background:var(--danger-gradient); padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="eliminarAsistencia('${idRegistro}')">Eliminar</button></td>
+            </tr>`;
+        });
+      });
+    };
+
+    function mostrarNotificacion(texto, tipo) {
+      const msg = document.getElementById("mensaje");
+      if (!msg) return;
+      msg.textContent = texto;
+      msg.className = `mensaje ${tipo}`;
+      setTimeout(() => (msg.className = "mensaje"), 3500);
+    }
+
+    // Lógica del Escáner integrado
+    let html5QrCode = null;
+
+    document.getElementById("btnCamara").addEventListener("click", () => {
+      html5QrCode = new Html5Qrcode("reader");
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        onScanSuccessIntegrado
+      ).then(() => {
+        document.getElementById("btnCamara").style.display = "none";
+      }).catch(err => {
+        alert("No se pudo iniciar la cámara o faltan permisos.");
+      });
+    });
+
+    function onScanSuccessIntegrado(codigoLeido) {
+      const codigo = codigoLeido.trim().toUpperCase();
+      const estado = document.getElementById("estadoEscaneo");
+      estado.style.display = "block";
+
+      get(ref(db, "estudiantes/" + codigo)).then((snapshot) => {
+        const est = snapshot.val();
+
+        if (!est) {
+          estado.textContent = `❌ Estudiante no registrado (${codigo})`;
+          estado.className = "mensaje error";
+        } else {
+          const fecha = fechaHoy();
+          const idRegistro = `${codigo}_${fecha}`;
+
+          get(ref(db, "asistencias/" + idRegistro)).then((snapAsistencia) => {
+            if (snapAsistencia.exists()) {
+              estado.textContent = `⚠️ ${est.nombre} ya registró asistencia hoy.`;
+              estado.className = "mensaje error";
+            } else {
+              const hora = horaAhora();
+              set(ref(db, "asistencias/" + idRegistro), {
+                codigo: est.codigo,
+                nombre: est.nombre,
+                fecha: fecha,
+                hora: hora
+              }).then(() => {
+                estado.textContent = `✔ Marcado con éxito: ${est.nombre}`;
+                estado.className = "mensaje ok";
+              });
+            }
+          });
+        }
+      });
+
+      html5QrCode.pause(true);
+      setTimeout(() => { 
+        try { html5QrCode.resume(); } catch(e){} 
+      }, 3000);
+    }
+
+    // Inicialización general
+    document.getElementById("filtroFecha").value = fechaHoy();
+    precargarEstudiantesIniciales();
+
+    // Sincronización en tiempo real
+    onValue(ref(db, "estudiantes"), () => cargarEstudiantes());
+    onValue(ref(db, "asistencias"), () => {
+      cargarAsistencias();
+    });
+  </script>
+</body>
+</html>
