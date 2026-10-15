@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel de Asistencia - PC</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-main: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.75);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      --danger-gradient: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-main);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.2) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.2) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      min-height: 100vh;
+      padding-bottom: 2rem;
+    }
+
+    header {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 1.5rem 2rem;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      background: var(--primary-gradient);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      display: grid;
+      gap: 2rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    .card h2 {
+      font-size: 1.25rem;
+      margin-bottom: 1.25rem;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 700;
+    }
+
+    .badge-contador {
+      background: var(--primary-gradient);
+      color: #fff;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .form-fila {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    input {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 0.8rem 1rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .form-fila input { flex: 1; min-width: 160px; }
+    input:focus { border-color: #a855f7; box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.25); }
+
+    button {
+      background: var(--primary-gradient);
+      color: #fff;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    button:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 1rem; }
+
+    th {
+      background: rgba(15, 23, 42, 0.6);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    td { padding: 1rem; border-bottom: 1px solid var(--card-border); font-size: 0.95rem; }
+
+    .qr-mini { background: #fff; padding: 4px; border-radius: 8px; display: inline-block; }
+    .qr-mini canvas, .qr-mini img { width: 50px; height: 50px; display: block; }
+
+    .mensaje { margin-top: 1.25rem; padding: 1rem; border-radius: 10px; font-weight: 600; display: none; }
+    .mensaje.ok { display: block; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.5); color: #34d399; }
+    .mensaje.error { display: block; background: rgba(244, 63, 94, 0.2); border: 1px solid rgba(244, 63, 94, 0.5); color: #fb7185; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Módulo de Asistencia (Panel Control)</h1>
+  </header>
+
+  <main>
+    <div id="mensaje" class="mensaje"></div>
+
+    <!-- TARJETA DE ACCESO RÁPIDO AL ESCÁNER -->
+    <section class="card" style="text-align: center;">
+      <h2 style="justify-content: center;">📱 Módulo Escáner Móvil</h2>
+      <p style="color: var(--text-muted); margin-bottom: 1rem;">
+        Haz clic abajo o abre esta dirección en tu teléfono celular para escanear carnets:
+      </p>
+      <a href="lector Qr-celular.html" target="_blank" style="text-decoration: none;">
+        <button type="button">📷 Abrir Cámara / Lector QR</button>
+      </a>
+    </section>
+
+    <!-- REGISTRO DE ESTUDIANTES -->
+    <section class="card">
+      <h2>
+        <span>👥 Registro de Estudiantes</span>
+        <span class="badge-contador" id="totalEstudiantes">Total: 0</span>
+      </h2>
+      <div class="form-fila">
+        <input id="codigo" placeholder="Código (ej. EST-0001)">
+        <input id="nombre" placeholder="Nombre completo">
+        <input id="grado" placeholder="Grado/Curso">
+        <button type="button" onclick="agregarEstudiante()">Agregar Estudiante</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Grado</th>
+            <th>Carnet QR</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tablaEstudiantes"></tbody>
+      </table>
+    </section>
+
+    <!-- HISTORIAL DE ASISTENCIA -->
+    <section class="card">
+      <h2>
+        <span>📋 Historial de Asistencia en Tiempo Real</span>
+        <span class="badge-contador" id="totalAsistencias">Asistencias: 0</span>
+      </h2>
+      <div class="form-fila" style="margin-bottom: 0;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+          Filtrar por Fecha: <input type="date" id="filtroFecha" onchange="cargarAsistencias()">
+        </label>
+        <button type="button" onclick="mostrarTodasAsistencias()" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Mostrar Todo</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+          </tr>
+        </thead>
+        <tbody id="tablaAsistencia"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <!-- Librería de QR -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- Script con Firebase Modular -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-analytics.js";
+    import { getDatabase, ref, set, get, remove, onValue } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBn-vPNYqN7kU85DR7IM2lkusk3ZXYzWuw",
+      authDomain: "asistencia-escaner.firebaseapp.com",
+      databaseURL: "https://asistencia-escaner-default-rtdb.firebaseio.com",
+      projectId: "asistencia-escaner",
+      storageBucket: "asistencia-escaner.firebasestorage.app",
+      messagingSenderId: "250407918565",
+      appId: "1:250407918565:web:a8eb0797930e4950752d0c",
+      measurementId: "G-3H3TVWM9FW"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getDatabase(app);
+
+    function fechaHoy() {
+      const d = new Date();
+      const aaaa = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return `${aaaa}-${mm}-${dd}`;
+    }
+
+    // Exponer funciones globales para que los botones HTML las detecten
+    window.agregarEstudiante = function() {
+      const codigoInput = document.getElementById("codigo");
+      const nombreInput = document.getElementById("nombre");
+      const gradoInput = document.getElementById("grado");
+
+      const codigo = codigoInput.value.trim().toUpperCase();
+      const nombre = nombreInput.value.trim();
+      const grado = gradoInput.value.trim();
+
+      if (!codigo || !nombre) {
+        alert("El código y el nombre son obligatorios.");
+        return;
+      }
+
+      set(ref(db, "estudiantes/" + codigo), { codigo, nombre, grado })
+        .then(() => {
+          codigoInput.value = "";
+          nombreInput.value = "";
+          gradoInput.value = "";
+          mostrarNotificacion("Estudiante agregado exitosamente", "ok");
+        })
+        .catch(() => {
+          alert("Error al guardar en Firebase.");
+        });
+    };
+
+    window.eliminarEstudiante = function(codigo) {
+      remove(ref(db, "estudiantes/" + codigo));
+      mostrarNotificacion("Estudiante eliminado", "error");
+    };
+
+    window.mostrarTodasAsistencias = function() {
+      document.getElementById("filtroFecha").value = "";
+      cargarAsistencias();
+    };
+
+    function precargarEstudiantesIniciales() {
+      const estudiantesRef = ref(db, "estudiantes");
+      get(estudiantesRef).then((snapshot) => {
+        if (!snapshot.exists()) {
+          const estudiantesIniciales = {
+            "EST-1001": { codigo: "EST-1001", nombre: "Sofía Valentina Gómez", grado: "10° A" },
+            "EST-1002": { codigo: "EST-1002", nombre: "Mateo Alejandro Pérez", grado: "10° A" },
+            "EST-1003": { codigo: "EST-1003", nombre: "Isabella Sofía Rodríguez", grado: "11° B" },
+            "EST-1004": { codigo: "EST-1004", nombre: "Lucas Daniel Martínez", grado: "9° C" },
+            "EST-1005": { codigo: "EST-1005", nombre: "Valentina Lucía Herrera", grado: "11° A" }
+          };
+          set(estudiantesRef, estudiantesIniciales);
+        }
+      });
+    }
+
+    function cargarEstudiantes() {
+      const tbody = document.getElementById("tablaEstudiantes");
+      const contador = document.getElementById("totalEstudiantes");
+      if (!tbody) return;
+
+      get(ref(db, "estudiantes")).then((snapshot) => {
+        tbody.innerHTML = "";
+        const datos = snapshot.val() || {};
+        const estudiantes = Object.values(datos);
+
+        if (contador) contador.textContent = `Total: ${estudiantes.length}`;
+
+        if (estudiantes.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">No hay estudiantes registrados.</td></tr>`;
+          return;
+        }
+
+        estudiantes.forEach(est => {
+          const fila = document.createElement("tr");
+          fila.innerHTML = `
+            <td>${est.codigo}</td>
+            <td>${est.nombre}</td>
+            <td>${est.grado}</td>
+            <td><div class="qr-mini" id="qr-${est.codigo}"></div></td>
+            <td><button type="button" style="background:var(--danger-gradient);" onclick="eliminarEstudiante('${est.codigo}')">Eliminar</button></td>`;
+          tbody.appendChild(fila);
+
+          if (typeof QRCode !== "undefined") {
+            try {
+              new QRCode(document.getElementById(`qr-${est.codigo}`), {
+                text: est.codigo,
+                width: 50,
+                height: 50
+              });
+            } catch (e) {}
+          }
+        });
+      });
+    }
+
+    window.cargarAsistencias = function() {
+      const tbody = document.getElementById("tablaAsistencia");
+      const filtroFecha = document.getElementById("filtroFecha");
+      const contador = document.getElementById("totalAsistencias");
+      if (!tbody) return;
+
+      get(ref(db, "asistencias")).then((snapshot) => {
+        tbody.innerHTML = "";
+        const datos = snapshot.val() || {};
+        const asistencias = Object.values(datos);
+        const fechaFiltro = filtroFecha ? filtroFecha.value : "";
+
+        const filtradas = fechaFiltro 
+          ? asistencias.filter(a => a.fecha === fechaFiltro)
+          : asistencias;
+
+        if (contador) {
+          contador.textContent = fechaFiltro 
+            ? `Hoy: ${filtradas.length}` 
+            : `Total: ${filtradas.length}`;
+        }
+
+        if (filtradas.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">No hay registros para la fecha seleccionada.</td></tr>`;
+          return;
+        }
+
+        filtradas.forEach(a => {
+          tbody.innerHTML += `
+            <tr>
+              <td>${a.codigo}</td>
+              <td>${a.nombre}</td>
+              <td>${a.fecha}</td>
+              <td>${a.hora}</td>
+            </tr>`;
+        });
+      });
+    };
+
+    function mostrarNotificacion(texto, tipo) {
+      const msg = document.getElementById("mensaje");
+      if (!msg) return;
+      msg.textContent = texto;
+      msg.className = `mensaje ${tipo}`;
+      setTimeout(() => (msg.className = "mensaje"), 3500);
+    }
+
+    // Inicialización general
+    document.getElementById("filtroFecha").value = fechaHoy();
+    precargarEstudiantesIniciales();
+
+    // Sincronización en tiempo real
+    onValue(ref(db, "estudiantes"), () => cargarEstudiantes());
+    onValue(ref(db, "asistencias"), () => {
+      cargarAsistencias();
+      mostrarNotificacion("¡Nueva asistencia registrada en tiempo real!", "ok");
+    });
+  </script>
+</body>
+</html>
