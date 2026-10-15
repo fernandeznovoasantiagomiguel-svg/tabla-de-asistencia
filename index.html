@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Panel de Asistencia - PC</title>
+  <title>Sistema de Asistencia en Tiempo Real</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -224,6 +224,7 @@
             <th>Nombre</th>
             <th>Fecha</th>
             <th>Hora</th>
+            <th>Acción</th>
           </tr>
         </thead>
         <tbody id="tablaAsistencia"></tbody>
@@ -298,6 +299,18 @@
     window.eliminarEstudiante = function(codigo) {
       remove(ref(db, "estudiantes/" + codigo));
       mostrarNotificacion("Estudiante eliminado", "error");
+    };
+
+    window.eliminarAsistencia = function(idRegistro) {
+      if (confirm("¿Estás seguro de que deseas eliminar este registro de asistencia?")) {
+        remove(ref(db, "asistencias/" + idRegistro))
+          .then(() => {
+            mostrarNotificacion("Asistencia eliminada del historial", "error");
+          })
+          .catch(() => {
+            alert("Error al intentar eliminar el registro.");
+          });
+      }
     };
 
     window.mostrarTodasAsistencias = function() {
@@ -384,17 +397,19 @@
         }
 
         if (filtradas.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">No hay registros para la fecha seleccionada.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">No hay registros para la fecha seleccionada.</td></tr>`;
           return;
         }
 
         filtradas.forEach(a => {
+          const idRegistro = `${a.codigo}_${a.fecha}`;
           tbody.innerHTML += `
             <tr>
               <td>${a.codigo}</td>
               <td>${a.nombre}</td>
               <td>${a.fecha}</td>
               <td>${a.hora}</td>
+              <td><button type="button" style="background:var(--danger-gradient); padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="eliminarAsistencia('${idRegistro}')">Eliminar</button></td>
             </tr>`;
         });
       });
