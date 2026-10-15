@@ -149,26 +149,34 @@
     .mensaje { margin-top: 1.25rem; padding: 1rem; border-radius: 10px; font-weight: 600; display: none; }
     .mensaje.ok { display: block; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.5); color: #34d399; }
     .mensaje.error { display: block; background: rgba(244, 63, 94, 0.2); border: 1px solid rgba(244, 63, 94, 0.5); color: #fb7185; }
+
+    #reader {
+      max-width: 400px;
+      margin: 1rem auto 0 auto;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px dashed rgba(168, 85, 247, 0.5);
+    }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>Módulo de Asistencia (Panel Control)</h1>
+    <h1>Sistema de Asistencia en Tiempo Real</h1>
   </header>
 
   <main>
     <div id="mensaje" class="mensaje"></div>
 
-    <!-- TARJETA DE ACCESO RÁPIDO AL ESCÁNER -->
+    <!-- MÓDULO DE ESCÁNER INTEGRADO -->
     <section class="card" style="text-align: center;">
-      <h2 style="justify-content: center;">📱 Módulo Escáner Móvil</h2>
+      <h2><span>📷 Lector QR Integrado</span></h2>
       <p style="color: var(--text-muted); margin-bottom: 1rem;">
-        Haz clic abajo o abre esta dirección en tu teléfono celular para escanear carnets:
+        Activa la cámara directamente desde esta página para escanear carnets:
       </p>
-      <a href="lectorqr-celular.html" target="_blank" style="text-decoration: none;">
-        <button type="button">📷 Abrir Cámara / Lector QR</button>
-      </a>
+      <button type="button" id="btnCamara">Activar Cámara</button>
+      <div id="reader"></div>
+      <div id="estadoEscaneo" class="mensaje" style="margin-top: 1rem; display: none;"></div>
     </section>
 
     <!-- REGISTRO DE ESTUDIANTES -->
@@ -200,7 +208,7 @@
     <!-- HISTORIAL DE ASISTENCIA -->
     <section class="card">
       <h2>
-        <span>📋 Historial de Asistencia en Tiempo Real</span>
+        <span>📋 Historial de Asistencia</span>
         <span class="badge-contador" id="totalAsistencias">Asistencias: 0</span>
       </h2>
       <div class="form-fila" style="margin-bottom: 0;">
@@ -223,8 +231,9 @@
     </section>
   </main>
 
-  <!-- Librería de QR -->
+  <!-- Librerías de QR y Html5-Qrcode -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
 
   <!-- Script con Firebase Modular -->
   <script type="module">
@@ -255,7 +264,11 @@
       return `${aaaa}-${mm}-${dd}`;
     }
 
-    // Exponer funciones globales para que los botones HTML las detecten
+    function horaAhora() {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    // Funciones globales de administración
     window.agregarEstudiante = function() {
       const codigoInput = document.getElementById("codigo");
       const nombreInput = document.getElementById("nombre");
@@ -395,6 +408,63 @@
       setTimeout(() => (msg.className = "mensaje"), 3500);
     }
 
+    // Lógica del Escáner integrado
+    let html5QrCode = null;
+
+    document.getElementById("btnCamara").addEventListener("click", () => {
+      html5QrCode = new Html5Qrcode("reader");
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        onScanSuccessIntegrado
+      ).then(() => {
+        document.getElementById("btnCamara").style.display = "none";
+      }).catch(err => {
+        alert("No se pudo iniciar la cámara o faltan permisos.");
+      });
+    });
+
+    function onScanSuccessIntegrado(codigoLeido) {
+      const codigo = codigoLeido.trim().toUpperCase();
+      const estado = document.getElementById("estadoEscaneo");
+      estado.style.display = "block";
+
+      get(ref(db, "estudiantes/" + codigo)).then((snapshot) => {
+        const est = snapshot.val();
+
+        if (!est) {
+          estado.textContent = `❌ Estudiante no registrado (${codigo})`;
+          estado.className = "mensaje error";
+        } else {
+          const fecha = fechaHoy();
+          const idRegistro = `${codigo}_${fecha}`;
+
+          get(ref(db, "asistencias/" + idRegistro)).then((snapAsistencia) => {
+            if (snapAsistencia.exists()) {
+              estado.textContent = `⚠️ ${est.nombre} ya registró asistencia hoy.`;
+              estado.className = "mensaje error";
+            } else {
+              const hora = horaAhora();
+              set(ref(db, "asistencias/" + idRegistro), {
+                codigo: est.codigo,
+                nombre: est.nombre,
+                fecha: fecha,
+                hora: hora
+              }).then(() => {
+                estado.textContent = `✔ Marcado con éxito: ${est.nombre}`;
+                estado.className = "mensaje ok";
+              });
+            }
+          });
+        }
+      });
+
+      html5QrCode.pause(true);
+      setTimeout(() => { 
+        try { html5QrCode.resume(); } catch(e){} 
+      }, 3000);
+    }
+
     // Inicialización general
     document.getElementById("filtroFecha").value = fechaHoy();
     precargarEstudiantesIniciales();
@@ -403,7 +473,6 @@
     onValue(ref(db, "estudiantes"), () => cargarEstudiantes());
     onValue(ref(db, "asistencias"), () => {
       cargarAsistencias();
-      mostrarNotificacion("¡Nueva asistencia registrada en tiempo real!", "ok");
     });
   </script>
 </body>
