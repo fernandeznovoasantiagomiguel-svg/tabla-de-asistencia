@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sistema de Asistencia en Tiempo Real</title>
+  <title>Sistema de Asistencia en Tiempo Real - C.I. SOLEDAD VIVES DE JOLY</title>
+
+  <!-- Favicon oficial para la pestaña -->
+  <link rel="icon" type="image/png" href="logo.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -45,6 +48,16 @@
       position: sticky;
       top: 0;
       z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .nav-logo {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
     }
 
     header h1 {
@@ -162,6 +175,7 @@
 <body>
 
   <header>
+    <img src="logo.png" alt="Logo" class="nav-logo">
     <h1>Sistema de Asistencia en Tiempo Real</h1>
   </header>
 
@@ -186,7 +200,7 @@
         <span class="badge-contador" id="totalEstudiantes">Total: 0</span>
       </h2>
       <div class="form-fila">
-        <input id="codigo" placeholder="Código (ej. EST-0001)">
+        <input id="codigo" placeholder="Código (ej. 1042587287)">
         <input id="nombre" placeholder="Nombre completo">
         <input id="grado" placeholder="Grado/Curso">
         <button type="button" onclick="agregarEstudiante()">Agregar Estudiante</button>
@@ -323,11 +337,12 @@
       get(estudiantesRef).then((snapshot) => {
         if (!snapshot.exists()) {
           const estudiantesIniciales = {
-            "EST-1001": { codigo: "EST-1001", nombre: "Sofía Valentina Gómez", grado: "10° A" },
-            "EST-1002": { codigo: "EST-1002", nombre: "Mateo Alejandro Pérez", grado: "10° A" },
-            "EST-1003": { codigo: "EST-1003", nombre: "Isabella Sofía Rodríguez", grado: "11° B" },
-            "EST-1004": { codigo: "EST-1004", nombre: "Lucas Daniel Martínez", grado: "9° C" },
-            "EST-1005": { codigo: "EST-1005", nombre: "Valentina Lucía Herrera", grado: "11° A" }
+            "1042587287": { codigo: "1042587287", nombre: "Girleza Berdugo", grado: "11° A" },
+            "1042587117": { codigo: "1042587117", nombre: "Yoelis Pérez", grado: "11° A" },
+            "1043982748": { codigo: "1043982748", nombre: "Gibran Ortiz", grado: "11° B" },
+            "1043983630": { codigo: "1043983630", nombre: "Natalia Ramírez", grado: "10° C" },
+            "1142928847": { codigo: "1142928847", nombre: "Santiago Fernández", grado: "11° A" },
+            "1047424083": { codigo: "1047424083", nombre: "Thaliana Aguirre", grado: "10° A" }
           };
           set(estudiantesRef, estudiantesIniciales);
         }
@@ -356,7 +371,7 @@
           fila.innerHTML = `
             <td>${est.codigo}</td>
             <td>${est.nombre}</td>
-            <td>${est.grado}</td>
+            <td>${est.grado || 'N/A'}</td>
             <td><div class="qr-mini" id="qr-${est.codigo}"></div></td>
             <td><button type="button" style="background:var(--danger-gradient);" onclick="eliminarEstudiante('${est.codigo}')">Eliminar</button></td>`;
           tbody.appendChild(fila);
