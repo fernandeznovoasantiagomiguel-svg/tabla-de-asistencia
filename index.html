@@ -323,12 +323,12 @@
       get(estudiantesRef).then((snapshot) => {
         if (!snapshot.exists()) {
           const estudiantesIniciales = {
-            "1042587287": { codigo: "1042587287", nombre: "Girleza Berdugo", grado: "General" },
-            "1042587117": { codigo: "1042587117", nombre: "Yoelis Perez", grado: "General" },
-            "1043982748": { codigo: "1043982748", nombre: "Gibran Ortiz", grado: "General" },
-            "1043983630": { codigo: "1043983630", nombre: "Natalia Ramirez", grado: "General" },
-            "1142928847": { codigo: "1142928847", nombre: "Santiago Fernandez", grado: "General" },
-            "1047424083": { codigo: "1047424083", nombre: "Thaliana Aguirre", grado: "General" }
+            "1042587287": { codigo: "1042587287", nombre: "Girleza Berdugo", grado: "11-A" },
+            "1042587117": { codigo: "1042587117", nombre: "Yoelis Perez", grado: "11-A" },
+            "1043982748": { codigo: "1043982748", nombre: "Gibran Ortiz", grado: "11-A" },
+            "1043983630": { codigo: "1043983630", nombre: "Natalia Ramirez", grado: "11-A" },
+            "1142928847": { codigo: "1142928847", nombre: "Santiago Fernandez", grado: "11-A" },
+            "1047424083": { codigo: "1047424083", nombre: "Thaliana Aguirre", grado: "11-A" }
           };
           set(estudiantesRef, estudiantesIniciales);
         }
